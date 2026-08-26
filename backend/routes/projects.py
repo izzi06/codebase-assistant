@@ -31,3 +31,4 @@ def get_file_content(project_id: str, path: str):
         "line_count": len(file_content.splitlines()),
         "content": file_content,
     }
+

@@ -1,5 +1,10 @@
-from fastapi import FastAPI
+from typing import Annotated
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
+from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
+from core.database import get_db
 
 from routes.upload import router as upload_router
 from routes.projects import router as projects_router
@@ -27,3 +32,15 @@ def root():
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
+
+@app.get("/health/db")
+def health_db_check(db: Annotated[str, Depends(get_db)]):
+    try:
+        db.execute(text("SELECT 1"))
+        return {"status": "ok"}
+    except SQLAlchemyError:
+        raise HTTPException(
+            status_code=503,
+            detail="Database unavailable",
+        )
+    
