@@ -24,6 +24,7 @@ app.add_middleware(
 app.include_router(upload_router)
 app.include_router(projects_router)
 
+
 @app.get("/")
 def root():
     return {"message": "Backend is running"}
@@ -33,14 +34,14 @@ def root():
 def health_check():
     return {"status": "ok"}
 
+
 @app.get("/health/db")
-def health_db_check(db: Annotated[str, Depends(get_db)]):
+def health_db_check(db: Annotated[Session, Depends(get_db)]):
     try:
         db.execute(text("SELECT 1"))
         return {"status": "ok"}
-    except SQLAlchemyError:
+    except SQLAlchemyError as error:
         raise HTTPException(
             status_code=503,
             detail="Database unavailable",
-        )
-    
+        ) from error
