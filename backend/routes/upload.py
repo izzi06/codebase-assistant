@@ -12,6 +12,9 @@ from services.repo_storage import (
     list_project_files,
 )
 
+from pathlib import Path
+from models.repository_file import RepositoryFile
+
 router = APIRouter(prefix="/upload", tags=["Upload"])
 
 
@@ -28,12 +31,27 @@ def upload_zip(
 
     files = list_project_files(project_dir)
 
+    repository_files = []
+
+    for file_path in files:
+        absolute_path = project_dir / file_path
+
+        repository_files.append(
+            RepositoryFile(
+                project_id=project_id,
+                path=file_path,
+                extension=Path(file_path).suffix,
+                size_bytes=absolute_path.stat().st_size,
+            )
+        )
+
     project = Project(
         id=project_id, filename=file.filename, file_count=len(files), status="uploaded"
     )
 
     try:
         db.add(project)
+        db.add_all(repository_files)
         db.commit()
         db.refresh(project)
     except SQLAlchemyError as error:

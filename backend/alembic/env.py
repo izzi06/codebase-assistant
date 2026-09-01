@@ -8,6 +8,7 @@ from alembic import context
 from core.config import DATABASE_URL
 from core.database import Base
 from models.project import Project
+from models.repository_file import RepositoryFile
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
